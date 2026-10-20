@@ -1,0 +1,609 @@
+{
+  "name": "F-8 Tool - Prepare Email Deletion",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            },
+            {
+              "name": "chat_id"
+            },
+            {
+              "name": "gmail_message_id"
+            },
+            {
+              "name": "sender"
+            },
+            {
+              "name": "subject"
+            },
+            {
+              "name": "email_date"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1d79ec5b-f8ff-4572-8225-6c1de1fcb822",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "17c7b429-0f65-4704-93d5-542d362f0e3b",
+              "leftValue": "={{    $input.all().some(item =>     String(item.json.gmail_message_id) ===       String($('When Executed by Another Workflow').first().json.gmail_message_id)     &&     String(item.json.user_id) ===       String($('When Executed by Another Workflow').first().json.user_id)     &&     item.json.status === 'deleted'   ) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "5aad8442-9978-443e-bacf-37d075e43c62",
+      "name": "Is Email Already Deleted?"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Email deletions",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "deletion_id": "={{ 'DEL-' + $execution.id }}",
+            "user_id": "={{ $('When Executed by Another Workflow').first().json.user_id }}",
+            "chat_id": "={{ $('When Executed by Another Workflow').first().json.chat_id }}",
+            "gmail_message_id": "={{ $('When Executed by Another Workflow').first().json.gmail_message_id }}",
+            "sender": "={{ $('When Executed by Another Workflow').first().json.sender }}",
+            "subject": "={{ $('When Executed by Another Workflow').first().json.subject }}",
+            "status": "pending",
+            "confirmation_count": "0",
+            "created_at": "={{ $now.setZone('Asia/Karachi').toFormat('dd/MM/yyyy-HH:mm') }}",
+            "updated_at": "={{ $now.setZone('Asia/Karachi').toFormat('dd/MM/yyyy-HH:mm') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "deletion_id",
+              "displayName": "deletion_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gmail_message_id",
+              "displayName": "gmail_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender",
+              "displayName": "sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confirmation_count",
+              "displayName": "confirmation_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deleted_at",
+              "displayName": "deleted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1296,
+        224
+      ],
+      "id": "381f01b3-ebf7-4c14-ae08-28d8cbfcf86d",
+      "name": "Save Pending Email Deletion"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77525b19-166c-42be-9b5c-bac236a50146",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "e722e896-4592-485c-ba9f-077b09d4f8d7",
+              "name": "status",
+              "value": "already_deleted",
+              "type": "string"
+            },
+            {
+              "id": "ffb4150c-5823-4b5a-8751-47561d2d5b0d",
+              "name": "message",
+              "value": "={{ 'This email has already been deleted.\\n\\nSender: ' + $('When Executed by Another Workflow').first().json.sender + '\\nSubject: ' + $('When Executed by Another Workflow').first().json.subject + '\\n\\nNo further action is required.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "6fc7f42e-d8ef-4f14-bea4-6657cc0b416a",
+      "name": "Return Already Deleted Message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77525b19-166c-42be-9b5c-bac236a50146",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "e722e896-4592-485c-ba9f-077b09d4f8d7",
+              "name": "status",
+              "value": "awaiting_first_confirmation",
+              "type": "string"
+            },
+            {
+              "id": "ffb4150c-5823-4b5a-8751-47561d2d5b0d",
+              "name": "message",
+              "value": "={{ 'Gmail Deletion Request\\n\\nFrom: ' + $('When Executed by Another Workflow').first().json.sender + '\\nSubject: ' + $('When Executed by Another Workflow').first().json.subject + '\\n\\nDo you want to delete this email?\\n\\nReply YES or NO.' }}",
+              "type": "string"
+            },
+            {
+              "id": "e29c3b5b-4ca4-4f6b-9d1d-c6a5f5c2687f",
+              "name": "deletion_id",
+              "value": "={{ $('Save Pending Email Deletion').first().json.deletion_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1520,
+        224
+      ],
+      "id": "2672e1b7-f65e-4703-996f-d6fdcb04545d",
+      "name": "Return First Deletion Confirmation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3c9626d3-8994-4c97-b06d-9de260117658",
+              "leftValue": "={{   $('Check Email Deletion History').all().some(item =>     String(item.json.user_id) ===       String($('When Executed by Another Workflow').first().json.user_id) &&     String(item.json.chat_id) ===       String($('When Executed by Another Workflow').first().json.chat_id) &&     item.json.status === 'pending'   ) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        96
+      ],
+      "id": "59428880-478a-455b-abf6-050522b5e5cb",
+      "name": "Is Deletion Already Pending?"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Email deletions",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "gmail_message_id",
+              "lookupValue": "={{ $('When Executed by Another Workflow').first().json.gmail_message_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "bfd7e180-3e5b-4546-aa4b-86cdcd13be08",
+      "name": "Check Email Deletion History",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77525b19-166c-42be-9b5c-bac236a50146",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "e722e896-4592-485c-ba9f-077b09d4f8d7",
+              "name": "status",
+              "value": "already_pending",
+              "type": "string"
+            },
+            {
+              "id": "ffb4150c-5823-4b5a-8751-47561d2d5b0d",
+              "name": "message",
+              "value": "={{ 'An email deletion request is already awaiting confirmation.\\n\\nFrom: ' + $('When Executed by Another Workflow').first().json.sender + '\\nSubject: ' + $('When Executed by Another Workflow').first().json.subject + '\\n\\nPlease reply YES or NO to the existing deletion request before starting another one.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        896,
+        0
+      ],
+      "id": "4bb84069-179a-49d8-9e2f-916aee3a8d43",
+      "name": "Return Pending Deletion Message"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Email deletions",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "chat_id",
+              "lookupValue": "={{ String($('When Executed by Another Workflow').first().json.user_id) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        176
+      ],
+      "id": "42df1427-a8a1-4bbe-883c-6c3a1c06269f",
+      "name": "Get User Active Deletions",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "917a4c4f-d7d4-447f-a6b5-c56fcf96b1ca",
+              "leftValue": "={{   $('Get User Active Deletions').all().some(item =>     String(item.json.user_id) ===       String($('When Executed by Another Workflow').first().json.user_id) &&     String(item.json.chat_id) ===       String($('When Executed by Another Workflow').first().json.chat_id) &&     item.json.status === 'pending' &&     [0, 1].includes(Number(item.json.confirmation_count))   ) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        992,
+        176
+      ],
+      "id": "430ea6fb-10f7-45f6-88a0-70193953c073",
+      "name": "Get User Active Deletions1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77525b19-166c-42be-9b5c-bac236a50146",
+              "name": "success",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "e722e896-4592-485c-ba9f-077b09d4f8d7",
+              "name": "status",
+              "value": "active_deletion_exists",
+              "type": "string"
+            },
+            {
+              "id": "ffb4150c-5823-4b5a-8751-47561d2d5b0d",
+              "name": "message",
+              "value": "={{\n  'You already have an email deletion request awaiting confirmation.\\n\\n' +\n  'Please reply YES or NO to your existing request before deleting another email.\\n\\n' +\n  'No new deletion request has been created.'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "e29c3b5b-4ca4-4f6b-9d1d-c6a5f5c2687f",
+              "name": "deletion_id",
+              "value": "={{ $('Save Pending Email Deletion').first().json.deletion_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1312,
+        48
+      ],
+      "id": "9d850fd4-54fe-4ef6-9871-538abc53246a",
+      "name": "Return Active Deletion Warning"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Check Email Deletion History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Email Already Deleted?": {
+      "main": [
+        [
+          {
+            "node": "Return Already Deleted Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Deletion Already Pending?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Pending Email Deletion": {
+      "main": [
+        [
+          {
+            "node": "Return First Deletion Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Deletion Already Pending?": {
+      "main": [
+        [
+          {
+            "node": "Return Pending Deletion Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get User Active Deletions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Email Deletion History": {
+      "main": [
+        [
+          {
+            "node": "Is Email Already Deleted?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Active Deletions": {
+      "main": [
+        [
+          {
+            "node": "Get User Active Deletions1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Active Deletions1": {
+      "main": [
+        [
+          {
+            "node": "Return Active Deletion Warning",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Pending Email Deletion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}

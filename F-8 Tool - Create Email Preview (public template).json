@@ -1,0 +1,340 @@
+{
+  "name": "F-8 Tool - Create Email Preview",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            },
+            {
+              "name": "chat_id"
+            },
+            {
+              "name": "recipient"
+            },
+            {
+              "name": "subject"
+            },
+            {
+              "name": "body"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ba7948a4-1a57-47fe-ac24-9f345dcc6068",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c2a664a-b160-411f-a99c-d316332acde2",
+              "name": "email_id",
+              "value": "={{ 'EMAIL-' + $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e28e7c9c-102b-4985-ad6b-2c4c7ee158bc",
+              "name": "approval_id",
+              "value": "={{ 'APR-' + $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "bf2488d8-ec7b-471f-8ba9-f4056329ae73",
+              "name": "status",
+              "value": "pending",
+              "type": "string"
+            },
+            {
+              "id": "62cb43ae-ad08-482e-83fa-674cf2c83079",
+              "name": "created_at",
+              "value": "={{ $now.setZone('Asia/Karachi').toFormat('dd/MM/yyyy-HH:mm') }}",
+              "type": "string"
+            },
+            {
+              "id": "7966efe5-b878-4ea1-85e0-8f51fbdb7f51",
+              "name": "updated_at",
+              "value": "={{ $now.setZone('Asia/Karachi').toFormat('dd/MM/yyyy-HH:mm') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "55bc8c58-44fa-4db1-8392-05c82779d098",
+      "name": "Prepare Email Record"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Email Approval",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "approval_id": "={{ $json.approval_id }}",
+            "user_id": "={{ $json.user_id }}",
+            "chat_id": "={{ $json.chat_id }}",
+            "recipient": "={{ $json.recipient }}",
+            "body": "={{ $json.body }}",
+            "subject": "={{ $json.subject }}",
+            "created_at": "={{ $json.created_at }}",
+            "status": "={{ $json.status }}",
+            "updated_at": "={{ $json.updated_at }}",
+            "email_id": "={{ $json.email_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "approval_id",
+              "displayName": "approval_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "draft_id",
+              "displayName": "draft_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recipient",
+              "displayName": "recipient",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "procesed_at",
+              "displayName": "procesed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email_id",
+              "displayName": "email_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        0
+      ],
+      "id": "345ed2ce-422d-4d8d-b6a9-9bd1ade9adcd",
+      "name": "Save Pending Email1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a432e1bd-be64-4215-a2db-4199e855d532",
+              "name": "email_id",
+              "value": "={{ $('Prepare Email Record').first().json.email_id }}",
+              "type": "string"
+            },
+            {
+              "id": "5a6a301e-c155-45bb-b67c-981b6b768a2a",
+              "name": "status",
+              "value": "={{ 'pending' }}",
+              "type": "string"
+            },
+            {
+              "id": "6340e0f6-5fef-4866-8077-bdc5ea8d76f2",
+              "name": "preview_message",
+              "value": "={{ 'Email Preview — ' + $('Prepare Email Record').first().json.email_id + '\\n\\nTo: ' + $('Prepare Email Record').first().json.recipient + '\\nSubject: ' + $('Prepare Email Record').first().json.subject + '\\n\\n' + $('Prepare Email Record').first().json.body + '\\n\\nReply with:\\n' + $('Prepare Email Record').first().json.email_id + ':DRAFT — Save as Gmail draft\\n' + $('Prepare Email Record').first().json.email_id + ':SENT — Send email' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        0
+      ],
+      "id": "38fe7bbb-691a-4348-88de-1f240402d12a",
+      "name": "Return Email Preview"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Record": {
+      "main": [
+        [
+          {
+            "node": "Save Pending Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Pending Email1": {
+      "main": [
+        [
+          {
+            "node": "Return Email Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Email Preview": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}

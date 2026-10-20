@@ -1,0 +1,103 @@
+{
+  "name": "F-8 Tool - Search Long Term Memory",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            },
+            {
+              "name": "search_query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fb0c2b48-b599-4bfd-a44d-44c612d39faf",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Ai_Memory",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "81752d1e-fe50-446d-bc9d-e158d73e7112",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst request = $('When Executed by Another Workflow').first().json;\n\nconst userId = String(request.user_id || '').trim();\nconst query = String(request.search_query || '')\n  .toLowerCase()\n  .trim();\n\nif (!userId || !query) {\n  return [{\n    json: {\n      success: false,\n      memories: [],\n      count: 0,\n      message: 'Missing user ID or search query'\n    }\n  }];\n}\n\n// Parse DD MM YYYY HH:mm (Pakistan time) for sorting\nfunction parseDate(value) {\n  const match = String(value || '').match(\n    /^(\\d{2}) (\\d{2}) (\\d{4})(?: (\\d{2}):(\\d{2}))?$/\n  );\n\n  if (!match) return 0;\n\n  const [, day, month, year, hour = '00', minute = '00'] = match;\n\n  return Date.UTC(\n    Number(year),\n    Number(month) - 1,\n    Number(day),\n    Number(hour),\n    Number(minute)\n  );\n}\n\n// Only retrieve the current user's records\nconst rows = $input.all()\n  .map(item => item.json)\n  .filter(row => String(row.user_id || '').trim() === userId);\n\n// Keep the latest record for each memory subject\nconst latest = new Map();\n\nfor (const row of rows) {\n  const key = String(\n    row.lookup_key ||\n    `${userId}:${row.memory_key || row.memory_id}`\n  );\n\n  const existing = latest.get(key);\n\n  if (\n    !existing ||\n    parseDate(row.updated_at) > parseDate(existing.updated_at)\n  ) {\n    latest.set(key, row);\n  }\n}\n\n// Extract keywords\nconst words = [...new Set(\n  query.split(/[^a-z0-9]+/)\n    .filter(word => word.length > 2)\n)];\n\n// Score memories\nconst matches = [...latest.values()]\n  .map(row => {\n    const searchable = [\n      row.memory_key,\n      row.memory_type,\n      row.memory_text\n    ].join(' ').toLowerCase().replace(/_/g, ' ');\n\n    const score = words.reduce(\n      (total, word) =>\n        total + (searchable.includes(word) ? 1 : 0),\n      0\n    );\n\n    return { row, score };\n  })\n  .filter(item => item.score > 0)\n  .sort((a, b) =>\n    b.score - a.score ||\n    parseDate(b.row.updated_at) - parseDate(a.row.updated_at)\n  )\n  .slice(0, 5)\n  .map(item => ({\n    memory_id: item.row.memory_id,\n    memory_key: item.row.memory_key,\n    memory_type: item.row.memory_type,\n    memory_text: item.row.memory_text,\n    updated_at: item.row.updated_at\n  }));\n\nreturn [{\n  json: {\n    success: true,\n    memories: matches,\n    count: matches.length,\n    message: matches.length\n      ? 'Relevant memories found'\n      : 'No relevant memories found'\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "9f6db618-e500-4de6-a74b-55208884638b",
+      "name": "Rank Memory Matches"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Rank Memory Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}

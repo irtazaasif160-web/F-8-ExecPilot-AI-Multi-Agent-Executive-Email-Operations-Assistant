@@ -1,0 +1,342 @@
+{
+  "name": "F-8 Tool - Save Long Term Memory",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            },
+            {
+              "name": "session_id"
+            },
+            {
+              "name": "memory_type"
+            },
+            {
+              "name": "memory_text"
+            },
+            {
+              "name": "memory_key"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1a1dea03-e0b2-4d16-9326-299d4ed9506c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\n\nconst allowedTypes = [\n  'preference',\n  'decision',\n  'commitment',\n  'fact'\n];\n\n// Validate and normalize inputs\nconst userId = String(input.user_id || '').trim();\nconst sessionId = String(input.session_id || '').trim();\n\nconst memoryType = String(input.memory_type || '')\n  .trim()\n  .toLowerCase();\n\nconst memoryText = String(input.memory_text || '').trim();\n\nconst memoryKey = String(input.memory_key || '')\n  .trim()\n  .toLowerCase()\n  .replace(/[^a-z0-9_]+/g, '_')\n  .replace(/^_+|_+$/g, '');\n\n// Validate required fields\nif (\n  !userId ||\n  !sessionId ||\n  !allowedTypes.includes(memoryType) ||\n  !memoryKey ||\n  !memoryText ||\n  memoryText.length > 1000\n) {\n  return [{\n    json: {\n      valid: false,\n      success: false,\n      message: 'Invalid memory information. Check required fields, memory type, key, and text length.'\n    }\n  }];\n}\n\n// Unique identifier for each user's memory subject\nconst lookupKey = `${userId}:${memoryKey}`;\n\n// Unique ID for newly inserted records\nconst memoryId = `MEM-${Date.now()}`;\n\n// Pakistan date and time\nconst now = $now\n  .setZone('Asia/Karachi')\n  .toFormat('dd MM yyyy HH:mm');\n\nreturn [{\n  json: {\n    valid: true,\n    memory_id: memoryId,\n    lookup_key: lookupKey,\n    user_id: userId,\n    session_id: sessionId,\n    memory_key: memoryKey,\n    memory_type: memoryType,\n    memory_text: memoryText,\n    created_at: now,\n    updated_at: now\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "9dc4b09d-8f90-4833-983b-f0489449f690",
+      "name": "Prepare Memory Record"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0638775d-56d4-43eb-9222-62d1f3765927",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "0759fbcf-6bae-46cc-ab12-8fc7d74775b6",
+      "name": "Memory Valid"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Ai_Memory",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "memory_id": "={{ $json.memory_id }}",
+            "session_id": "={{ $json.session_id }}",
+            "user_id": "={{ $json.user_id }}",
+            "memory_type ": "={{ $json.memory_type}}",
+            "memory_text": "={{ $json.memory_text }}",
+            "created_at": "={{ $now.setZone('Asia/Karachi').toFormat('dd/MM/yyyy-hh:mm:ss ') }}",
+            "updated_at": "={{ $now.setZone('Asia/Karachi').toFormat('dd/MM/yyyy-hh:mm:ss ') }}",
+            "lookup_key": "={{ $json.lookup_key }}",
+            "memory_key": "={{ $json.memory_key }}"
+          },
+          "matchingColumns": [
+            "lookup_key"
+          ],
+          "schema": [
+            {
+              "id": "memory_id",
+              "displayName": "memory_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "memory_type ",
+              "displayName": "memory_type ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "memory_text",
+              "displayName": "memory_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "memory_key",
+              "displayName": "memory_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "lookup_key",
+              "displayName": "lookup_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "958918ab-6d5f-4ce8-9b47-d34c81b9a09f",
+      "name": "Save Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1dcf93da-c019-452c-9ad9-4493468f8455",
+              "name": "success",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "1f43056f-02b5-478c-966a-0dc79176e9d4",
+              "name": "message",
+              "value": "Memory saved successfully",
+              "type": "string"
+            },
+            {
+              "id": "636d4184-8001-45e3-a568-216f50b577e9",
+              "name": "memory_id",
+              "value": "={{ $('Prepare Memory Record').first().json.memory_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "25f30c36-645d-4730-9056-c7c6b28c1f7c",
+      "name": "Return Save Result"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1dcf93da-c019-452c-9ad9-4493468f8455",
+              "name": "success",
+              "value": "failed",
+              "type": "string"
+            },
+            {
+              "id": "636d4184-8001-45e3-a568-216f50b577e9",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        752,
+        96
+      ],
+      "id": "863f6b10-4ef6-45aa-9fdb-f93a616cc6f9",
+      "name": "Return Validation Error"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Prepare Memory Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Memory Record": {
+      "main": [
+        [
+          {
+            "node": "Memory Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory Valid": {
+      "main": [
+        [
+          {
+            "node": "Save Memory",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Memory": {
+      "main": [
+        [
+          {
+            "node": "Return Save Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
